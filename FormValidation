@@ -1,0 +1,192 @@
+import { useRef, useState } from "react";
+
+const FormValidate = () => {
+  const fullnameRef = useRef<any>(null);
+  const ageref = useRef<any>(null);
+  const locationref = useRef<any>(null);
+  const skillsref = useRef<any>(null);
+  const qualref = useRef<any>(null);
+  const btnref = useRef<any>(null);
+  const imageref = useRef<any>(null);
+
+  const [formData, setFormData] = useState<any>(null);
+  const [userData, setUserData] = useState<any[]>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [forUpdate, setforUpdate] = useState<number | null>(null);
+
+  const handleImageUpload = (event: React.ChangeEvent<any>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setImagePreview(url);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (fullnameRef.current) {
+      const newData = {
+        fullName: fullnameRef.current.value,
+        age: ageref.current?.value,
+        location: locationref.current?.value,
+        skills: skillsref.current?.value,
+        qualification: qualref.current?.value,
+        registrationTime: new Date().toLocaleString(),
+        image: imagePreview,
+      };
+
+      if (forUpdate !== null) {
+        const updatedUserData = userData.map((user, index) =>
+          index === forUpdate ? newData : user
+        );
+        setUserData(updatedUserData);
+        setforUpdate(null);
+      } else {
+        setUserData([...userData, newData]);
+      }
+      setFormData(newData);
+      clearForm();
+    }
+  };
+
+  const clearForm = () => {
+    if (fullnameRef.current) fullnameRef.current.value = "";
+    if (ageref.current) ageref.current.value = "";
+    if (locationref.current) locationref.current.value = "";
+    if (skillsref.current) skillsref.current.value = "";
+    if (qualref.current) qualref.current.value = "";
+    if (imageref.current) imageref.current.value = "";
+    setImagePreview(null);
+  };
+
+  const handleDelete = (index: number) => {
+    const updatedData = userData.filter((_, i) => i !== index);
+    setUserData(updatedData);
+  };
+
+  const handleUpdate = (index: number) => {
+    const userToUpdate = userData[index];
+    if (userToUpdate && fullnameRef.current) {
+      fullnameRef.current.value = userToUpdate.fullName;
+      if (ageref.current) ageref.current.value = userToUpdate.age;
+      if (locationref.current) locationref.current.value = userToUpdate.location;
+      if (skillsref.current) skillsref.current.value = userToUpdate.skills;
+      if (qualref.current) qualref.current.value = userToUpdate.qualification;
+      setImagePreview(userToUpdate.image || null);
+      setforUpdate(index);
+    }
+  };
+
+  return (
+    <div className="container">
+      <div className="form-group">
+        <label>Full Name</label>
+        <input type="text" className="form-control" ref={fullnameRef} />
+      </div>
+      <div className="form-group">
+        <label>Age</label>
+        <input type="number" className="form-control" ref={ageref} />
+      </div>
+      <div className="form-group">
+        <label>Location</label>
+        <input type="text" className="form-control" ref={locationref} />
+      </div>
+      <div className="form-group">
+        <label>Skills</label>
+        <input type="text" className="form-control" ref={skillsref} />
+      </div>
+      <div className="form-group">
+        <label>Qualification</label>
+        <input type="text" className="form-control" ref={qualref} />
+      </div>
+      <div className="form-group">
+        <label>Upload Image</label>
+        <input
+          type="file"
+          className="form-control"
+          ref={imageref}
+          onChange={handleImageUpload}
+        />
+      </div>
+      {imagePreview && (
+        <div className="form-group mt-2">
+          <img src={imagePreview} alt="Preview" style={{ width: "150px", height: "150px", objectFit: "cover" }}/>
+        </div>
+      )}
+      <div className="form-group">
+        <button className="btn btn-success" ref={btnref} onClick={handleSubmit}>
+          {forUpdate !== null ? "Update" : "Submit"}
+        </button>
+      </div>
+
+      <div className="mt-4">
+        <h3>Registered Users</h3>
+        <table className="table table-bordered">
+          <thead className="bg-dark text-white">
+            <tr>
+              <th>Full Name</th>
+              <th>Age</th>
+              <th>Location</th>
+              <th>Skills</th>
+              <th>Qualification</th>
+              <th>Registration Time</th>
+              <th>Image</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {userData.map((user, index) => (
+              <tr key={index}>
+                <td>{user.fullName}</td>
+                <td>{user.age}</td>
+                <td>{user.location}</td>
+                <td>{user.skills}</td>
+                <td>{user.qualification}</td>
+                <td>{user.registrationTime}</td>
+                <td>
+                  {user.image && (
+                    <img src={user.image} alt="User" style={{ width: "50px", height: "50px", objectFit: "cover",}}/>
+                  )}
+                </td>
+                <td>
+                  <button className="btn btn-primary" onClick={() => handleUpdate(index)}>Update</button>
+                  <button className="btn btn-danger" onClick={() => handleDelete(index)} style={{ marginLeft: "30px" }}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {formData && (
+        <div className="card mt-4" style={{ border: "15px solid orange" }}>
+          <div className="card-body">
+            <h2 className="card-title" style={{textDecoration:"underline"}}>Form Data</h2>
+            <p>
+              <strong>Full Name:</strong> {formData.fullName}
+            </p>
+            <p>
+              <strong>Age:</strong> {formData.age}
+            </p>
+            <p>
+              <strong>Location:</strong> {formData.location}
+            </p>
+            <p>
+              <strong>Skills:</strong> {formData.skills}
+            </p>
+            <p>
+              <strong>Qualification:</strong> {formData.qualification}
+            </p>
+            {formData.image && (
+              <img src={formData.image} alt="Uploaded" style={{ width: "150px", height: "150px", objectFit: "cover",}}/>
+            )}
+            <p>
+              <strong>Registration Time:</strong> {formData.registrationTime}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FormValidate;
